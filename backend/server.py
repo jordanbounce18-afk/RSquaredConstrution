@@ -1,12 +1,12 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List
+from pydantic import BaseModel, Field, ConfigDict, EmailStr
+from typing import List, Optional
 import uuid
 from datetime import datetime, timezone
 
@@ -20,51 +20,118 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
 # Create the main app without a prefix
-app = FastAPI()
+app = FastAPI(title="R2 Construction API")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
 
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
-    
+# ============ Models ============
+class EstimateRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    name: str
+    email: EmailStr
+    phone: str
+    project_type: str
+    budget: Optional[str] = None
+    timeline: Optional[str] = None
+    address: Optional[str] = None
+    message: str
+    status: str = "new"  # new | reviewed | contacted | closed
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
 
-# Add your routes to the router instead of directly to app
+class EstimateCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=120)
+    email: EmailStr
+    phone: str = Field(..., min_length=5, max_length=40)
+    project_type: str = Field(..., min_length=1)
+    budget: Optional[str] = None
+    timeline: Optional[str] = None
+    address: Optional[str] = None
+    message: str = Field(..., min_length=1, max_length=4000)
+
+
+class EstimateStatusUpdate(BaseModel):
+    status: str
+
+
+# ============ Routes ============
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "R2 Construction API", "status": "ok"}
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
-    
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
-    
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
-    
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    
-    return status_checks
+@api_router.post("/estimates", response_model=EstimateRequest, status_code=201)
+async def create_estimate(payload: EstimateCreate):
+    estimate = EstimateRequest(**payload.model_dump())
+    doc = estimate.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.estimates.insert_one(doc)
+    return estimate
+
+
+@api_router.get("/estimates", response_model=List[EstimateRequest])
+async def list_estimates():
+    cursor = db.estimates.find({}, {"_id": 0}).sort("created_at", -1)
+    items = await cursor.to_list(1000)
+    for it in items:
+        if isinstance(it.get('created_at'), str):
+            it['created_at'] = datetime.fromisoformat(it['created_at'])
+    return items
+
+
+@api_router.get("/estimates/{estimate_id}", response_model=EstimateRequest)
+async def get_estimate(estimate_id: str):
+    doc = await db.estimates.find_one({"id": estimate_id}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Estimate not found")
+    if isinstance(doc.get('created_at'), str):
+        doc['created_at'] = datetime.fromisoformat(doc['created_at'])
+    return doc
+
+
+@api_router.patch("/estimates/{estimate_id}", response_model=EstimateRequest)
+async def update_estimate_status(estimate_id: str, payload: EstimateStatusUpdate):
+    allowed = {"new", "reviewed", "contacted", "closed"}
+    if payload.status not in allowed:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Allowed: {sorted(allowed)}")
+    result = await db.estimates.update_one(
+        {"id": estimate_id},
+        {"$set": {"status": payload.status}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Estimate not found")
+    doc = await db.estimates.find_one({"id": estimate_id}, {"_id": 0})
+    if isinstance(doc.get('created_at'), str):
+        doc['created_at'] = datetime.fromisoformat(doc['created_at'])
+    return doc
+
+
+@api_router.delete("/estimates/{estimate_id}", status_code=204)
+async def delete_estimate(estimate_id: str):
+    result = await db.estimates.delete_one({"id": estimate_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Estimate not found")
+    return None
+
+
+@api_router.get("/estimates/stats/summary")
+async def estimates_summary():
+    total = await db.estimates.count_documents({})
+    new = await db.estimates.count_documents({"status": "new"})
+    reviewed = await db.estimates.count_documents({"status": "reviewed"})
+    contacted = await db.estimates.count_documents({"status": "contacted"})
+    closed = await db.estimates.count_documents({"status": "closed"})
+    return {
+        "total": total,
+        "new": new,
+        "reviewed": reviewed,
+        "contacted": contacted,
+        "closed": closed,
+    }
+
 
 # Include the router in the main app
 app.include_router(api_router)
@@ -77,12 +144,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
