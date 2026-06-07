@@ -1,0 +1,112 @@
+{
+  "project_name": "R\u00b2 CONSTRUCTION",
+  "theme": "LIGHT",
+  "archetype": "Archetype 1 (Organic & Earthy) mixed with Archetype 5 (Luxury) - 'Editorial High-End'",
+  "typography": {
+    "heading_font": "Cormorant Garamond",
+    "body_font": "Outfit",
+    "rules": {
+      "h1": "text-5xl md:text-6xl lg:text-7xl font-light tracking-tight text-primary",
+      "h2": "text-4xl md:text-5xl font-light tracking-tight text-primary",
+      "h3": "text-2xl md:text-3xl font-medium text-primary",
+      "body": "text-base md:text-lg text-text_muted leading-relaxed font-outfit",
+      "overline": "text-xs uppercase tracking-[0.2em] font-medium text-text_muted font-outfit"
+    }
+  },
+  "colors": {
+    "background": "#FAF9F6",
+    "surface": "#F2EFE9",
+    "surface_alt": "#E8E4DB",
+    "primary": "#1C1C1C",
+    "primary_hover": "#333333",
+    "text_main": "#1C1C1C",
+    "text_muted": "#595959",
+    "border": "#DCD7CE",
+    "accent": "#9E907F"
+  },
+  "layout_and_spacing": {
+    "container": "max-w-7xl mx-auto px-6 md:px-12",
+    "section_padding": "py-24 md:py-32",
+    "grid_bento": "grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8",
+    "border_radius": "rounded-none"
+  },
+  "components": {
+    "buttons": "rounded-none bg-[#1C1C1C] text-[#FAF9F6] hover:bg-[#333333] transition-colors duration-300 px-8 py-4 font-outfit uppercase tracking-widest text-sm inline-flex items-center justify-center",
+    "cards": "bg-[#F2EFE9] p-8 lg:p-12 border border-[#DCD7CE] rounded-none",
+    "inputs": "rounded-none border-b border-[#DCD7CE] bg-transparent focus:border-[#1C1C1C] focus:ring-0 px-0 py-3 shadow-none font-outfit transition-colors rounded-none placeholder:text-[#9E907F]",
+    "navigation": "fixed w-full z-50 bg-[#FAF9F6]/90 backdrop-blur-md border-b border-[#DCD7CE] transition-all duration-300"
+  },
+  "image_urls": [
+    {
+      "category": "hero",
+      "url": "https://images.pexels.com/photos/7045356/pexels-photo-7045356.jpeg",
+      "description": "High-end modern kitchen interior, used as the main hero background"
+    },
+    {
+      "category": "service_kitchen",
+      "url": "https://images.pexels.com/photos/7587864/pexels-photo-7587864.jpeg",
+      "description": "Contemporary kitchen remodeling service image"
+    },
+    {
+      "category": "service_bathroom",
+      "url": "https://images.pexels.com/photos/35868666/pexels-photo-35868666.jpeg",
+      "description": "Luxury bathroom renovation service image"
+    },
+    {
+      "category": "service_full_home",
+      "url": "https://images.pexels.com/photos/34688219/pexels-photo-34688219.jpeg",
+      "description": "Full home renovation showing spacious modern living room"
+    },
+    {
+      "category": "service_additions",
+      "url": "https://images.unsplash.com/photo-1721815693498-cc28507c0ba2?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MDZ8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBob3VzZSUyMGV4dGVyaW9yJTIwYXJjaGl0ZWN0dXJlfGVufDB8fHx8MTc4MDg0NzUyNnww&ixlib=rb-4.1.0&q=85",
+      "description": "Two story house representing additions and extensions"
+    },
+    {
+      "category": "service_exterior",
+      "url": "https://images.pexels.com/photos/11520303/pexels-photo-11520303.jpeg",
+      "description": "Modern patio and deck exterior image"
+    },
+    {
+      "category": "service_commercial",
+      "url": "https://images.pexels.com/photos/14408745/pexels-photo-14408745.jpeg",
+      "description": "Modern commercial office building interior"
+    },
+    {
+      "category": "portfolio_1",
+      "url": "https://images.unsplash.com/photo-1628012209120-d9db7abf7eab?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MDZ8MHwxfHNlYXJjaHwyfHxtb2Rlcm4lMjBob3VzZSUyMGV4dGVyaW9yJTIwYXJjaGl0ZWN0dXJlfGVufDB8fHx8MTc4MDg0NzUyNnww&ixlib=rb-4.1.0&q=85",
+      "description": "Modern white concrete building exterior"
+    },
+    {
+      "category": "portfolio_2",
+      "url": "https://images.pexels.com/photos/5563473/pexels-photo-5563473.jpeg",
+      "description": "Contemporary cottage with large windows"
+    },
+    {
+      "category": "portfolio_3",
+      "url": "https://images.pexels.com/photos/31737860/pexels-photo-31737860.jpeg",
+      "description": "Luxury house exterior lit up at night"
+    },
+    {
+      "category": "about_image",
+      "url": "https://images.pexels.com/photos/10738764/pexels-photo-10738764.jpeg",
+      "description": "Architectural modern interior for the about section"
+    }
+  ],
+  "motion_and_interactions": {
+    "hover_image": "group-hover:scale-105 transition-transform duration-700 ease-out",
+    "fade_in": "Use staggered fade up and translate-y animations for text elements using Framer Motion",
+    "scroll": "Implement smooth scrolling using lenis if possible for a premium feel"
+  },
+  "instructions_to_main_agent": [
+    "Use pure HTML/Tailwind for marketing layout structures to achieve asymmetrical bento grids and overlap.",
+    "Do NOT use generic Shadcn Card components for the portfolio or services. Build custom sharp-edged divs with hover effects.",
+    "Use Shadcn Form, Input, Textarea, Select for the 'Request a Free Estimate' section, but customize them to have a 'minimalist editorial' look: remove rounded corners (use `rounded-none`), use border-b only for inputs, and remove default shadows.",
+    "All containers, buttons, and images MUST use `rounded-none` to enforce the architectural style.",
+    "The Hero section should have a warm gradient or subtle overlay (e.g. `bg-black/30`) so the white/cream serif text stands out.",
+    "Use the Tetris Grid (Mode A) for the portfolio and services sections. Emphasize asymmetry and generous spacing (`gap-8`, `gap-12`).",
+    "Admin page should be a clean, high-contrast dashboard using Shadcn Table to display submissions, sticking to the same font families.",
+    "All interactive elements MUST include data-testid attributes for testing.",
+    "Use `lucide-react` for icons with thin stroke-width (1 or 1.5) to keep the minimal look."
+  ]
+}
