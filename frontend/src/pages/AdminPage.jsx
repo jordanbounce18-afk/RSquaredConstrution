@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { listEstimates, updateEstimateStatus, deleteEstimate, estimatesSummary } from "@/lib/api";
 import { ADMIN } from "@/constants/testIds";
+import { API } from "@/lib/api";
+import { Download } from "lucide-react";
 
 const STATUSES = ["new", "reviewed", "contacted", "closed"];
 
@@ -98,13 +100,22 @@ export default function AdminPage() {
               </span>
             </div>
           </div>
-          <button
-            data-testid={ADMIN.refresh}
-            onClick={load}
-            className="inline-flex items-center gap-2 border border-[#DCD7CE] hover:bg-[#F2EFE9] px-4 py-2 uppercase tracking-[0.2em] text-[10px]"
-          >
-            <RefreshCw strokeWidth={1.5} className="w-3.5 h-3.5" /> Refresh
-          </button>
+          <div className="flex items-center gap-2">
+            <a
+              href={`${API}/estimates/export.xlsx`}
+              data-testid="admin-export-xlsx"
+              className="inline-flex items-center gap-2 bg-[#1C1C1C] text-[#FAF9F6] hover:bg-[#333] px-4 py-2 uppercase tracking-[0.2em] text-[10px]"
+            >
+              <Download strokeWidth={1.5} className="w-3.5 h-3.5" /> Export Excel
+            </a>
+            <button
+              data-testid={ADMIN.refresh}
+              onClick={load}
+              className="inline-flex items-center gap-2 border border-[#DCD7CE] hover:bg-[#F2EFE9] px-4 py-2 uppercase tracking-[0.2em] text-[10px]"
+            >
+              <RefreshCw strokeWidth={1.5} className="w-3.5 h-3.5" /> Refresh
+            </button>
+          </div>
         </div>
       </header>
 
@@ -220,20 +231,41 @@ export default function AdminPage() {
       </main>
 
       <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
-        <DialogContent data-testid={ADMIN.detailDialog} className="rounded-none max-w-2xl">
+        <DialogContent data-testid={ADMIN.detailDialog} className="rounded-none max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-serif-r2 text-2xl">{selected?.name}</DialogTitle>
             <DialogDescription>{selected && fmt(selected.created_at)}</DialogDescription>
           </DialogHeader>
           {selected && (
-            <div className="grid grid-cols-2 gap-4 text-sm mt-2">
-              <Field k="Email" v={selected.email} />
-              <Field k="Phone" v={selected.phone} />
-              <Field k="Project" v={selected.project_type} />
-              <Field k="Budget" v={selected.budget || "—"} />
-              <Field k="Timeline" v={selected.timeline || "—"} />
-              <Field k="Address" v={selected.address || "—"} />
-              <div className="col-span-2">
+            <div className="space-y-6 mt-2">
+              <Section title="Basic Information">
+                <Field k="Email" v={selected.email} />
+                <Field k="Phone" v={selected.phone} />
+                <Field k="Preferred Contact" v={selected.preferred_contact} />
+                <Field k="Best Time" v={selected.best_time_to_contact} />
+                <Field k="Address" v={selected.address} />
+                <Field k="Property Type" v={selected.property_type} />
+              </Section>
+              <Section title="Project Details">
+                <Field k="Primary Project" v={selected.project_type} />
+                <Field k="All Project Types" v={(selected.project_types || []).join(", ")} />
+                <Field k="Style Preference" v={selected.style_preference} />
+                <Field k="Has Plans" v={selected.has_plans} />
+                <Field k="Square Footage" v={selected.square_footage} />
+                <Field k="Scope" v={selected.scope} span2 />
+              </Section>
+              <Section title="Timeline">
+                <Field k="Ideal Start" v={selected.ideal_start_date} />
+                <Field k="Timeline Flexibility" v={selected.timeline} />
+                <Field k="Hard Deadline" v={selected.hard_deadline} span2 />
+              </Section>
+              <Section title="Budget & Source">
+                <Field k="Budget" v={selected.budget} />
+                <Field k="Financing" v={selected.financing} />
+                <Field k="Budget Flexibility" v={selected.budget_flexibility} />
+                <Field k="Heard About Us" v={selected.hear_about} />
+              </Section>
+              <div>
                 <p className="uppercase tracking-[0.24em] text-[10px] text-[#9E907F] mb-2">Message</p>
                 <p className="text-[#1C1C1C] whitespace-pre-wrap">{selected.message}</p>
               </div>
@@ -257,9 +289,16 @@ const SummaryCard = ({ label, value, testid, highlight }) => (
   </div>
 );
 
-const Field = ({ k, v }) => (
-  <div>
+const Field = ({ k, v, span2 }) => (
+  <div className={span2 ? "col-span-2" : ""}>
     <p className="uppercase tracking-[0.24em] text-[10px] text-[#9E907F] mb-1">{k}</p>
-    <p className="text-[#1C1C1C] break-words">{v}</p>
+    <p className="text-[#1C1C1C] break-words text-sm whitespace-pre-wrap">{v || "—"}</p>
+  </div>
+);
+
+const Section = ({ title, children }) => (
+  <div className="border border-[#DCD7CE] p-5">
+    <p className="uppercase tracking-[0.3em] text-[10px] text-[#1C1C1C] font-medium mb-4">{title}</p>
+    <div className="grid grid-cols-2 gap-4">{children}</div>
   </div>
 );

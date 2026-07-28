@@ -4,8 +4,8 @@ export const COMPANY = {
   tagline: "Remodeling & Renovation",
   phone: "719-499-6248",
   phoneHref: "tel:+17194996248",
-  email: "Emailhere@gmail.com",
-  emailHref: "mailto:Emailhere@gmail.com",
+  email: "BryanR2construction@gmail.com",
+  emailHref: "mailto:BryanR2construction@gmail.com",
   area: "Colorado Springs & Surrounding Areas",
   established: "Crafted to last",
 };
@@ -132,4 +132,39 @@ export const TIMELINES = [
   "3–6 months",
   "6–12 months",
   "Just exploring",
+];
+
+export const CONTACT_METHODS = ["Email", "Phone / Text", "Either"];
+export const CONTACT_TIMES = ["Morning", "Afternoon", "Evening", "Anytime"];
+export const PROPERTY_TYPES = [
+  "Single-family home",
+  "Townhome",
+  "Condo",
+  "Multi-family",
+  "Other",
+];
+export const STYLE_PREFERENCES = [
+  "Modern / Contemporary",
+  "Transitional",
+  "Traditional",
+  "Farmhouse",
+  "Rustic / Mountain",
+  "Not sure — need guidance",
+];
+export const HAS_PLANS_OPTIONS = ["Yes — plans ready", "In progress", "No — need help"];
+export const FINANCING_OPTIONS = [
+  "Cash / savings",
+  "Home equity loan / HELOC",
+  "Cash-out refinance",
+  "Construction loan",
+  "Not decided yet",
+];
+export const BUDGET_FLEXIBILITY = ["Firm — do not exceed", "Somewhat flexible", "Open — best value wins"];
+export const HEAR_ABOUT_OPTIONS = [
+  "Google search",
+  "Referral from friend / neighbor",
+  "Social media",
+  "Repeat customer",
+  "Drove by a jobsite",
+  "Other",
 ];
