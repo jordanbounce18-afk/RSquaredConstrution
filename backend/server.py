@@ -239,11 +239,142 @@ async def send_estimate_email(est: EstimateRequest) -> None:
                 json=payload,
             )
         if resp.status_code >= 300:
-            logger.error(f"Email send failed: {resp.status_code} {resp.text}")
+            logger.error(f"Owner email send failed: {resp.status_code} {resp.text}")
         else:
-            logger.info(f"Estimate email sent to {ESTIMATE_NOTIFY_EMAIL} (id={est.id})")
+            logger.info(f"Owner email sent to {ESTIMATE_NOTIFY_EMAIL} (id={est.id})")
     except Exception as e:
-        logger.exception(f"Email send error: {e}")
+        logger.exception(f"Owner email send error: {e}")
+
+
+def build_customer_confirmation_html(est: EstimateRequest) -> str:
+    first_name = est.name.split(" ")[0] if est.name else "there"
+    summary_rows = []
+    fields = [
+        ("Project", est.project_type),
+        ("Timeline", est.timeline),
+        ("Budget", est.budget),
+        ("Ideal start", est.ideal_start_date),
+    ]
+    for label, val in fields:
+        if not val:
+            continue
+        summary_rows.append(
+            f'<tr>'
+            f'<td style="padding:8px 0;font-family:Arial,sans-serif;font-size:12px;'
+            f'color:#9E907F;text-transform:uppercase;letter-spacing:2px;width:38%;">{label}</td>'
+            f'<td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;'
+            f'color:#1C1C1C;">{val}</td>'
+            f'</tr>'
+        )
+    summary_html = (
+        f'<table role="presentation" width="100%" cellspacing="0" cellpadding="0" '
+        f'style="border-top:1px solid #DCD7CE;border-bottom:1px solid #DCD7CE;margin:24px 0;">'
+        f'{"".join(summary_rows)}</table>'
+        if summary_rows else ""
+    )
+    notify_email = ESTIMATE_NOTIFY_EMAIL or "bryan@r2construction.com"
+    return f"""
+<!DOCTYPE html>
+<html><body style="margin:0;padding:0;background:#FAF9F6;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#FAF9F6;">
+    <tr><td align="center" style="padding:40px 12px;">
+      <table role="presentation" width="620" cellspacing="0" cellpadding="0"
+             style="max-width:620px;background:#FAF9F6;border:1px solid #DCD7CE;">
+        <tr>
+          <td style="padding:40px 40px 8px 40px;font-family:Georgia,serif;">
+            <div style="font-size:11px;letter-spacing:3px;color:#9E907F;text-transform:uppercase;font-family:Arial,sans-serif;">
+              R² Construction
+            </div>
+            <h1 style="margin:16px 0 0 0;font-size:34px;font-weight:300;color:#1C1C1C;line-height:1.1;">
+              Thank you, {first_name}.
+            </h1>
+            <div style="margin-top:4px;font-size:26px;font-weight:300;color:#1C1C1C;
+                        font-style:italic;font-family:Georgia,serif;">
+              We received your request.
+            </div>
+          </td>
+        </tr>
+        <tr><td style="padding:16px 40px 8px 40px;font-family:Arial,sans-serif;
+                       font-size:15px;color:#595959;line-height:1.7;">
+          <p style="margin:16px 0;">
+            Your project questionnaire is in — thank you for taking the time to walk us
+            through it. Bryan and the team will personally review your details and reach
+            back out <strong style="color:#1C1C1C;">within one business day</strong> to
+            schedule a walk-through and next steps.
+          </p>
+          {summary_html}
+          <p style="margin:16px 0;">
+            In the meantime, if a photo, sketch, or reference image would help us
+            prepare, just reply to this email and attach it.
+          </p>
+        </td></tr>
+        <tr><td style="padding:16px 40px 32px 40px;">
+          <table role="presentation" cellspacing="0" cellpadding="0">
+            <tr>
+              <td style="background:#1C1C1C;padding:14px 28px;">
+                <a href="tel:+17194996248" style="color:#FAF9F6;font-family:Arial,sans-serif;
+                   font-size:12px;letter-spacing:3px;text-transform:uppercase;text-decoration:none;">
+                  Call 719-499-6248
+                </a>
+              </td>
+              <td width="12"></td>
+              <td style="border:1px solid #1C1C1C;padding:14px 28px;">
+                <a href="mailto:{notify_email}" style="color:#1C1C1C;font-family:Arial,sans-serif;
+                   font-size:12px;letter-spacing:3px;text-transform:uppercase;text-decoration:none;">
+                  Email Bryan
+                </a>
+              </td>
+            </tr>
+          </table>
+        </td></tr>
+        <tr><td style="padding:20px 40px;background:#1C1C1C;color:#E8E4DB;
+                       font-family:Arial,sans-serif;font-size:11px;letter-spacing:2px;
+                       text-transform:uppercase;line-height:1.7;">
+          R² Construction — Remodeling &amp; Renovation<br/>
+          <span style="color:#9E907F;text-transform:none;letter-spacing:0;font-size:12px;">
+            Colorado Springs &amp; surrounding areas · Licensed &amp; Insured
+          </span>
+        </td></tr>
+      </table>
+      <p style="margin:16px 0 0 0;font-family:Arial,sans-serif;font-size:11px;color:#9E907F;">
+        You're receiving this because you submitted a project questionnaire on our site.
+      </p>
+    </td></tr>
+  </table>
+</body></html>
+"""
+
+
+async def send_customer_confirmation(est: EstimateRequest) -> None:
+    if not EMAIL_KEY:
+        return
+    payload = {
+        "to": [est.email],
+        "subject": f"We received your project request — R² Construction",
+        "html": build_customer_confirmation_html(est),
+        "from_name": EMAIL_FROM_NAME,
+    }
+    if ESTIMATE_NOTIFY_EMAIL:
+        payload["contact_email"] = ESTIMATE_NOTIFY_EMAIL
+    try:
+        async with httpx.AsyncClient(timeout=30) as http:
+            resp = await http.post(
+                f"{EMAIL_BASE_URL}/api/v1/email/send",
+                headers={"X-Email-Key": EMAIL_KEY},
+                json=payload,
+            )
+        if resp.status_code >= 300:
+            logger.error(f"Customer confirmation failed: {resp.status_code} {resp.text}")
+        else:
+            logger.info(f"Customer confirmation sent to {est.email} (id={est.id})")
+    except Exception as e:
+        logger.exception(f"Customer confirmation error: {e}")
+
+
+async def send_estimate_notifications(est: EstimateRequest) -> None:
+    """Fire both owner notification and customer confirmation in the background."""
+    await send_estimate_email(est)
+    await send_customer_confirmation(est)
 
 
 # ============ Excel export ============
@@ -328,7 +459,7 @@ async def create_estimate(payload: EstimateCreate, background: BackgroundTasks):
     doc = estimate.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
     await db.estimates.insert_one(doc)
-    background.add_task(send_estimate_email, estimate)
+    background.add_task(send_estimate_notifications, estimate)
     return estimate
 
 
