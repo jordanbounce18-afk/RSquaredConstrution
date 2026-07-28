@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { PORTFOLIO_ITEMS } from "@/data/site";
 import { PORTFOLIO } from "@/constants/testIds";
 
-const CATEGORIES = ["All", "Full Home", "Kitchen", "Bathroom", "Additions", "Exterior", "Commercial"];
+const CATEGORIES = ["All", "Full Home", "Kitchen", "Bathroom", "Additions", "Exterior"];
 
 export const Portfolio = () => {
   const [active, setActive] = useState("All");

@@ -28,9 +28,9 @@ export const Hero = () => {
             <span className="block italic font-light text-[#E8E4DB]">lived in for decades.</span>
           </h1>
           <p className="r2-fade-up r2-delay-300 mt-10 max-w-xl text-base md:text-lg text-[#E8E4DB]/85 leading-relaxed">
-            We are a full-service remodeling and renovation studio crafting kitchens,
-            bathrooms, whole-home transformations, additions, exteriors, and commercial
-            build-outs with quiet, considered detail.
+            We are a residential remodeling and renovation studio crafting kitchens,
+            bathrooms, whole-home transformations, additions, and outdoor living with
+            quiet, considered detail.
           </p>
 
           <div className="r2-fade-up r2-delay-400 mt-12 flex flex-wrap items-center gap-4">

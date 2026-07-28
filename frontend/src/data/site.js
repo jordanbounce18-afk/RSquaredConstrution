@@ -47,13 +47,6 @@ export const SERVICES = [
       "Outdoor living that extends the architecture — composite decks, stone patios, pergolas, and stairs built to outlast seasons.",
     image: "https://images.pexels.com/photos/11520303/pexels-photo-11520303.jpeg",
   },
-  {
-    slug: "commercial",
-    title: "Commercial Remodeling",
-    description:
-      "Tenant improvements and storefronts delivered with minimal downtime — finishes, MEP coordination, and on-brand build-outs.",
-    image: "https://images.pexels.com/photos/14408745/pexels-photo-14408745.jpeg",
-  },
 ];
 
 export const PROJECT_TYPES = SERVICES.map((s) => s.title);
@@ -96,10 +89,10 @@ export const PORTFOLIO_ITEMS = [
     span: "md:col-span-6",
   },
   {
-    title: "Storefront Build-out",
-    location: "Downtown",
-    category: "Commercial",
-    image: "https://images.pexels.com/photos/14408745/pexels-photo-14408745.jpeg",
+    title: "Ridgeline Kitchen & Great Room",
+    location: "Colorado Springs, CO",
+    category: "Full Home",
+    image: "https://images.pexels.com/photos/34688219/pexels-photo-34688219.jpeg",
     span: "md:col-span-12",
   },
 ];
@@ -119,9 +112,9 @@ export const TESTIMONIALS = [
   },
   {
     quote:
-      "Our storefront build-out was completed two days early. Their commercial team is sharp and unbelievably tidy.",
+      "Every trade R² brought on site respected our home. They finished a full basement two days early and the punch list was already handled.",
     author: "Andre L.",
-    role: "Café Owner — Downtown",
+    role: "Homeowner — Downtown",
   },
 ];
 

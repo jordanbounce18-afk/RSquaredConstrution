@@ -16,7 +16,7 @@ export const Services = () => {
           </div>
           <div className="md:col-span-8">
             <h2 className="font-serif-r2 text-4xl md:text-6xl font-light tracking-tight text-[#1C1C1C] leading-[1.05]">
-              Six disciplines.
+              Five disciplines.
               <span className="italic"> One standard of craft.</span>
             </h2>
             <p className="mt-6 max-w-2xl text-[#595959] text-base md:text-lg leading-relaxed">

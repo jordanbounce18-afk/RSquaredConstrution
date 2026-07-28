@@ -17,8 +17,8 @@ export const Footer = () => {
               </span>
             </div>
             <p className="mt-6 text-[#E8E4DB]/70 max-w-md leading-relaxed">
-              {COMPANY.tagline}. Senior-led remodeling, renovation, and additions for
-              Colorado homes and storefronts.
+              {COMPANY.tagline}. Senior-led residential remodeling, renovation, and
+              additions for Colorado homes.
             </p>
           </div>
           <div className="md:col-span-3">
