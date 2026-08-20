@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Leave a Review — R² Construction</title>
+<style>
+  :root {
+    --cream: #FAF9F6;
+    --card: #F2EFE9;
+    --dark: #1C1C1C;
+    --taupe: #9E907F;
+    --border: #DCD7CE;
+    --muted: #595959;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--cream);
+    color: var(--dark);
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  header {
+    padding: 24px 24px 0 24px;
+    text-align: center;
+  }
+  .overline {
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    font-size: 11px;
+    color: var(--taupe);
+  }
+  h1 {
+    font-family: Georgia, serif;
+    font-weight: 400;
+    font-size: 40px;
+    margin: 12px 0 8px 0;
+  }
+  h1 em { font-style: italic; }
+  .sub {
+    color: var(--muted);
+    max-width: 480px;
+    margin: 0 auto 32px auto;
+    line-height: 1.6;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 0 20px 60px 20px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 36px;
+    margin-bottom: 48px;
+  }
+  label {
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-size: 10px;
+    color: var(--taupe);
+    margin-bottom: 8px;
+  }
+  input[type="text"], textarea {
+    width: 100%;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    padding: 10px 0;
+    font-size: 16px;
+    font-family: inherit;
+    color: var(--dark);
+    margin-bottom: 24px;
+  }
+  input[type="text"]:focus, textarea:focus {
+    outline: none;
+    border-bottom-color: var(--dark);
+  }
+  textarea { resize: vertical; min-height: 110px; }
+  .stars { font-size: 32px; letter-spacing: 6px; cursor: pointer; margin-bottom: 24px; }
+  .stars span { color: var(--border); transition: color 0.15s; }
+  .stars span.filled { color: #c9a227; }
+  button {
+    background: var(--dark);
+    color: var(--cream);
+    border: 0;
+    padding: 14px 32px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  button:disabled { opacity: 0.5; cursor: default; }
+  #formMsg { margin-top: 16px; font-size: 14px; }
+  #formMsg.ok { color: #2f6f3e; }
+  #formMsg.err { color: #8a3b3b; }
+  h2 {
+    font-family: Georgia, serif;
+    font-weight: 400;
+    font-size: 26px;
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .review {
+    border-top: 1px solid var(--border);
+    padding: 20px 0;
+  }
+  .review .stars-static { color: #c9a227; font-size: 16px; letter-spacing: 3px; margin-bottom: 6px; }
+  .review .name { font-weight: bold; margin-bottom: 6px; }
+  .review .text { color: var(--muted); line-height: 1.6; white-space: pre-wrap; }
+  #reviewsEmpty { color: var(--muted); text-align: center; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="overline">R² Construction</div>
+  <h1>Share your <em>experience.</em></h1>
+  <p class="sub">We'd love to hear how your project went. Reviews are read by our team before they're published.</p>
+</header>
+
+<div class="wrap">
+  <form class="card" id="reviewForm">
+    <label for="name">Your Name *</label>
+    <input type="text" id="name" required maxlength="100" placeholder="Full name" />
+
+    <label>Rating *</label>
+    <div class="stars" id="stars">
+      <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
+    </div>
+
+    <label for="text">Your Review *</label>
+    <textarea id="text" required maxlength="2000" placeholder="Tell us about your project and experience working with us."></textarea>
+
+    <button type="submit" id="submitBtn">Submit Review</button>
+    <div id="formMsg"></div>
+  </form>
+
+  <h2>What Our Clients Are Saying</h2>
+  <div id="reviewsList"></div>
+  <div id="reviewsEmpty" style="display:none;">Be the first to leave a review!</div>
+</div>
+
+<script>
+  let rating = 0;
+  const starEls = document.querySelectorAll('#stars span');
+  starEls.forEach(function (el) {
+    el.addEventListener('click', function () {
+      rating = parseInt(el.getAttribute('data-v'), 10);
+      paintStars();
+    });
+  });
+  function paintStars() {
+    starEls.forEach(function (el) {
+      var v = parseInt(el.getAttribute('data-v'), 10);
+      el.classList.toggle('filled', v <= rating);
+    });
+  }
+
+  var form = document.getElementById('reviewForm');
+  var msg = document.getElementById('formMsg');
+  var btn = document.getElementById('submitBtn');
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    msg.textContent = '';
+    msg.className = '';
+
+    var name = document.getElementById('name').value.trim();
+    var text = document.getElementById('text').value.trim();
+
+    if (!name || !text || rating < 1) {
+      msg.textContent = 'Please fill in your name, a review, and select a star rating.';
+      msg.className = 'err';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+
+    fetch('/api/reviews', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name, rating: rating, text: text })
+    })
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+      .then(function () {
+        msg.textContent = 'Thank you! Your review has been submitted and will appear here once approved.';
+        msg.className = 'ok';
+        form.reset();
+        rating = 0;
+        paintStars();
+      })
+      .catch(function () {
+        msg.textContent = 'Something went wrong. Please try again.';
+        msg.className = 'err';
+      })
+      .finally(function () {
+        btn.disabled = false;
+        btn.textContent = 'Submit Review';
+      });
+  });
+
+  function loadReviews() {
+    fetch('/api/reviews')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var list = document.getElementById('reviewsList');
+        var empty = document.getElementById('reviewsEmpty');
+        var reviews = (data && data.reviews) || [];
+        if (reviews.length === 0) {
+          empty.style.display = 'block';
+          return;
+        }
+        list.innerHTML = reviews.map(function (r) {
+          var stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+          var name = String(r.name || '').replace(/</g, '&lt;');
+          var text = String(r.text || '').replace(/</g, '&lt;');
+          return '<div class="review">' +
+            '<div class="stars-static">' + stars + '</div>' +
+            '<div class="name">' + name + '</div>' +
+            '<div class="text">' + text + '</div>' +
+          '</div>';
+        }).join('');
+      })
+      .catch(function () {});
+  }
+  loadReviews();
+</script>
+
+</body>
+</html>
