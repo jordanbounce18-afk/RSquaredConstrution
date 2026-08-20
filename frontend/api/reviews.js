@@ -66,3 +66,81 @@ function buildApprovalEmailHtml(review, approveUrl, rejectUrl) {
                                                                                                                                                                                                                                                                                                                           </body></html>`;
 }
 
+export default async function handler(req, res) {
+      if (req.method === "GET") {
+              let client;
+              try {
+                        client = await getClient();
+                        const ids = await client.lRange("reviews:approved", 0, 49);
+                        const reviews = [];
+                        for (const id of ids) {
+                                    const raw = await client.get(`review:${id}`);
+                                    if (raw) reviews.push(JSON.parse(raw));
+                        }
+                        return res.status(200).json({ reviews });
+              } catch (err) {
+                        console.error("List reviews failed", err);
+                        return res.status(500).json({ error: "Could not load reviews" });
+              } finally {
+                        if (client) await client.quit();
+              }
+      }
+
+      if (req.method === "POST") {
+              const { name, rating, text } = req.body || {};
+              const numRating = Number(rating);
+              if (!name || !text || !Number.isInteger(numRating) || numRating < 1 || numRating > 5) {
+                        return res.status(400).json({ error: "Missing or invalid fields" });
+              }
+
+              const id = crypto.randomUUID();
+              const review = {
+                        id,
+                        name: String(name).slice(0, 100),
+                        rating: numRating,
+                        text: String(text).slice(0, 2000),
+                        status: "pending",
+                        created_at: new Date().toISOString(),
+              };
+
+              let client;
+              try {
+                        client = await getClient();
+                        await client.set(`review:${id}`, JSON.stringify(review));
+                        await client.lPush("reviews:pending", id);
+              } catch (err) {
+                        console.error("Store review failed", err);
+                        return res.status(500).json({ error: "Could not save review" });
+              } finally {
+                        if (client) await client.quit();
+              }
+
+              try {
+                        const base = process.env.SITE_URL;
+                        const approveUrl = `${base}/api/review-action?id=${id}&action=approve&token=${makeToken(id, "approve")}`;
+                        const rejectUrl = `${base}/api/review-action?id=${id}&action=reject&token=${makeToken(id, "reject")}`;
+                        await fetch("https://api.resend.com/emails", {
+                                    method: "POST",
+                                    headers: {
+                                                  Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+                                                  "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify({
+                                                  from: process.env.FROM_EMAIL,
+                                                  to: [process.env.NOTIFY_EMAIL],
+                                                  subject: `New Review from ${review.name} (${numRating}\u2605) \u2014 Approval Needed`,
+                                                  html: buildApprovalEmailHtml(review, approveUrl, rejectUrl),
+                                    }),
+                        });
+              } catch (err) {
+                        console.error("Review notification email failed", err);
+              }
+
+              return res.status(201).json({ id, status: "ok" });
+      }
+
+      res.setHeader("Allow", ["GET", "POST"]);
+      return res.status(405).json({ error: "Method not allowed" });
+}
+
+
