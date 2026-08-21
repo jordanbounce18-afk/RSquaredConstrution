@@ -43,7 +43,7 @@ export const Hero = () => {
               <ArrowRight strokeWidth={1.5} className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </a>
             <a
-              href="#portfolio"
+              href="/our-work.html"
               data-testid={HERO.secondaryCta}
               className="inline-flex items-center gap-3 border border-[#FAF9F6]/40 text-[#FAF9F6] hover:bg-[#FAF9F6] hover:text-[#1C1C1C] px-8 py-4 uppercase tracking-[0.24em] text-[11px] font-sans-r2 transition-colors"
             >
