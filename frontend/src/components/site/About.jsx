@@ -1,7 +1,6 @@
 import { ABOUT } from "@/constants/testIds";
 
-const ABOUT_IMG = "https://images.pexels.com/photos/10738764/pexels-photo-10738764.jpeg";
-
+const ABOUT_IMG = "/media/portfolio/r2-staircase-detail.jpg";
 export const About = () => {
   return (
     <section

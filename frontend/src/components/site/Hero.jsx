@@ -1,8 +1,7 @@
 import { ArrowRight, ArrowDown } from "lucide-react";
 import { HERO } from "@/constants/testIds";
 
-const HERO_IMG = "https://images.pexels.com/photos/7045356/pexels-photo-7045356.jpeg";
-
+const HERO_IMG = "/media/portfolio/r2-kitchen.jpg";
 export const Hero = () => {
   return (
     <section
